@@ -29,7 +29,9 @@ func newListCmd() *cobra.Command {
 			repoDir := config.RepoDir(configDir)
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "NAME\tTARGET\tSTATUS")
+			if _, err := fmt.Fprintln(w, "NAME\tTARGET\tSTATUS"); err != nil {
+				return err
+			}
 
 			for _, f := range cfg.Files {
 				target, hasTarget := fileops.ResolveTarget(f.Targets)
@@ -40,7 +42,9 @@ func newListCmd() *cobra.Command {
 					targetDisplay = fileops.TildePath(target)
 				}
 
-				fmt.Fprintf(w, "%s\t%s\t%s\n", f.Name, targetDisplay, status)
+				if _, err := fmt.Fprintf(w, "%s\t%s\t%s\n", f.Name, targetDisplay, status); err != nil {
+					return err
+				}
 			}
 
 			return w.Flush()

@@ -23,7 +23,7 @@ func WritePID(configDir string) error {
 
 // RemovePID removes the PID file.
 func RemovePID(configDir string) {
-	os.Remove(PIDFile(configDir))
+	_ = os.Remove(PIDFile(configDir))
 }
 
 // ReadPID reads the PID from the PID file. Returns 0 if not found.

@@ -93,12 +93,7 @@ func newDaemonStopCmd() *cobra.Command {
 				return nil
 			}
 
-			p, err := os.FindProcess(pid)
-			if err != nil {
-				return fmt.Errorf("find process: %w", err)
-			}
-
-			if err := p.Signal(os.Interrupt); err != nil {
+			if err := daemon.StopProcess(pid); err != nil {
 				return fmt.Errorf("stop daemon: %w", err)
 			}
 

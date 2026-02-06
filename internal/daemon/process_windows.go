@@ -17,8 +17,8 @@ func processExists(pid int) bool {
 	return err == nil
 }
 
-// stopProcess kills the process on Windows.
-func stopProcess(pid int) error {
+// StopProcess kills the process on Windows.
+func StopProcess(pid int) error {
 	proc, err := os.FindProcess(pid)
 	if err != nil {
 		return err

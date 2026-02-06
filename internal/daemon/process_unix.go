@@ -17,8 +17,8 @@ func processExists(pid int) bool {
 	return err == nil
 }
 
-// stopProcess sends SIGTERM to the process.
-func stopProcess(pid int) error {
+// StopProcess sends SIGTERM to the process.
+func StopProcess(pid int) error {
 	proc, err := os.FindProcess(pid)
 	if err != nil {
 		return err
