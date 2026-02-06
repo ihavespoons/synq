@@ -1,0 +1,137 @@
+version: 2
+
+project_name: synq
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: synq
+    main: ./cmd/synq
+    binary: synq
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version=v{{.Version}}
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: ihavespoons
+    name: synq
+  draft: false
+  prerelease: auto
+  name_template: "{{.ProjectName}} v{{.Version}}"
+  header: |
+    ## synq v{{.Version}}
+
+    Sync configuration files across machines via GitHub.
+  footer: |
+    ## Installation
+
+    ### Homebrew (macOS & Linux)
+    ```bash
+    brew install ihavespoons/tap/synq
+    ```
+
+    ### Start the background service
+    ```bash
+    brew services start synq
+    ```
+
+    ### Manual Download
+
+    #### macOS (Apple Silicon)
+    ```bash
+    curl -LO https://github.com/ihavespoons/synq/releases/download/v{{.Version}}/synq_{{.Version}}_darwin_arm64.tar.gz
+    tar -xzf synq_{{.Version}}_darwin_arm64.tar.gz
+    sudo mv synq /usr/local/bin/
+    ```
+
+    #### macOS (Intel)
+    ```bash
+    curl -LO https://github.com/ihavespoons/synq/releases/download/v{{.Version}}/synq_{{.Version}}_darwin_amd64.tar.gz
+    tar -xzf synq_{{.Version}}_darwin_amd64.tar.gz
+    sudo mv synq /usr/local/bin/
+    ```
+
+    #### Linux (amd64)
+    ```bash
+    curl -LO https://github.com/ihavespoons/synq/releases/download/v{{.Version}}/synq_{{.Version}}_linux_amd64.tar.gz
+    tar -xzf synq_{{.Version}}_linux_amd64.tar.gz
+    sudo mv synq /usr/local/bin/
+    ```
+
+    ### Go Install
+    ```bash
+    go install github.com/ihavespoons/synq/cmd/synq@v{{.Version}}
+    ```
+
+brews:
+  - name: synq
+    repository:
+      owner: ihavespoons
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    skip_upload: auto
+    directory: Formula
+    homepage: "https://github.com/ihavespoons/synq"
+    description: "Sync configuration files across machines via GitHub"
+    license: "MIT"
+    install: |
+      bin.install "synq"
+    service: |
+      run [opt_bin/"synq", "daemon", "start", "--foreground"]
+      keep_alive true
+      log_path var/"log/synq/synq.log"
+      error_log_path var/"log/synq/synq.err"
+      working_dir var
+    caveats: |
+      To get started:
+        synq setup
+
+      To start the background sync daemon:
+        brew services start synq
+
+      To stop the daemon:
+        brew services stop synq
+    test: |
+      system "#{bin}/synq", "--version"
