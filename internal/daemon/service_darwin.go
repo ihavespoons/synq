@@ -72,13 +72,19 @@ func InstallService(configDir string) error {
 	}
 	defer f.Close()
 
-	return tmpl.Execute(f, struct {
+	if err := tmpl.Execute(f, struct {
 		BinaryPath string
 		LogDir     string
 	}{
 		BinaryPath: binPath,
 		LogDir:     logDir,
-	})
+	}); err != nil {
+		return err
+	}
+
+	// Load the plist so the daemon starts immediately.
+	_ = exec.Command("launchctl", "load", plist).Run()
+	return nil
 }
 
 // UninstallService removes the launchd plist.

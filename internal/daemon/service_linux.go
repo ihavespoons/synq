@@ -46,8 +46,12 @@ func InstallService(configDir string) error {
 		return err
 	}
 
-	// Reload systemd.
+	// Reload systemd, enable and start the service.
 	_ = exec.Command("systemctl", "--user", "daemon-reload").Run()
+	_ = exec.Command("systemctl", "--user", "enable", "synq").Run()
+	if err := exec.Command("systemctl", "--user", "start", "synq").Run(); err != nil {
+		return fmt.Errorf("start service: %w (you may need to run: loginctl enable-linger $USER)", err)
+	}
 	return nil
 }
 
